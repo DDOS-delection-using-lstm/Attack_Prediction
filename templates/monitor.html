@@ -169,6 +169,9 @@
     .action-button:hover {
       background-color: #34495e;
     }
+    .dashboard-grid .card:last-child {
+      margin-bottom: 0;
+    }
   </style>
 </head>
 
@@ -191,6 +194,10 @@
         <div class="stat-value" id="detectionCount">0</div>
         <div class="stat-label">Attack Detections</div>
       </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalRequestsCounter">0</div>
+        <div class="stat-label">Total Requests</div>
+    </div>
     </div>
 
     <div class="chart-container">
@@ -200,6 +207,14 @@
     <button type="button" id="downloadLogsBtn" class="action-button">
       Download Traffic Logs
     </button>
+
+    <div class="card">
+      <h2>Total Requests</h2>
+      <div class="chart-container" style="height: 200px">
+        <canvas id="requestCountChart"></canvas>
+      </div>
+
+    </div>
 
     <div class="dashboard-grid">
       <div class="card">
@@ -242,12 +257,7 @@
         </div>
       </div>
 
-      <div class="card">
-        <h2>Total Requests</h2>
-        <div class="chart-container" style="height: 200px">
-          <canvas id="requestCountChart"></canvas>
-        </div>
-      </div>
+      
     </div>
   </div>
 
@@ -262,14 +272,14 @@
         datasets: [
           {
             label: "Normal Traffic",
-            data: [50],
+            data: [30],
             backgroundColor: "#27ae60",
             borderColor: "#27ae60",
             borderWidth: 1,
           },
           {
             label: "Attack Traffic",
-            data: [50],
+            data: [70],
             backgroundColor: "#e74c3c",
             borderColor: "#e74c3c",
             borderWidth: 1,
@@ -299,77 +309,81 @@
 
     const ctxRequestCount = document.getElementById("requestCountChart").getContext("2d");
     const requestCountChart = new Chart(ctxRequestCount, {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Number of Requests Received",
-            data: [],
-            borderColor: "#3498db",
-            backgroundColor: "rgba(52, 152, 219, 0.1)",
-            borderWidth: 2,
-            fill: true,
-            tension: 0.1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-          duration: 0,
+        type: "line",
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: "Total Requests",
+                    data: [],
+                    borderColor: "#3498db",
+                    backgroundColor: "rgba(52, 152, 219, 0.1)",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                },
+            ],
         },
-        scales: {
-          x: {
-            type: "time",
-            time: {
-              unit: "minute",
-              tooltipFormat: "HH:mm",
-              displayFormats: {
-                minute: "HH:mm",
-              },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 0, // Disable animations for smoother updates
             },
-            title: {
-              display: true,
-              text: "Timestamp",
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        tooltipFormat: 'HH:mm:ss',
+                        displayFormats: {
+                            minute: 'HH:mm:ss'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Timestamp'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: "Total Requests"
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return Math.round(value);
+                        }
+                    }
+                }
             },
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: "Number of Requests",
-            },
-            max: 500,
-            ticks: {
-              stepSize: 50,
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            display: true,
-          },
-          title: {
-            display: true,
-            text: "Number of Requests per Timestamp",
-            font: {
-              size: 16,
-            },
-          },
-        },
-      },
+            plugins: {
+                legend: {
+                    display: true,
+                },
+                title: {
+                    display: true,
+                    text: "Total Requests Over Time",
+                    font: {
+                        size: 16,
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            }
+        }
     });
  
       const ctx = document.getElementById('trafficChart').getContext('2d');
-
       window.trafficChart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: [],
           datasets: [{
-            label: 'Requests Received by Server',
+            label: 'Requests Received by Server per seconds',
             data: [],
             borderColor: 'rgb(0, 180, 180)',
             backgroundColor: 'rgba(0, 180, 180, 0.2)',
@@ -495,12 +509,9 @@
         clearInterval(window.trafficUpdateInterval);
       }
       
-      
-      
-    
+
 
     let totalRequests = 0;
-    
     let peakRps = 0;
     let detectionCount = 0;
 
@@ -516,14 +527,42 @@
         .then((data) => {
           totalRequests = data.count;
           const now = Date.now();
+          if (requestCountChart.data.labels.length > 50) {
+            requestCountChart.data.labels.shift();
+            requestCountChart.data.datasets[0].data.shift();
+        }
 
           requestCountChart.data.labels.push(now);
           requestCountChart.data.datasets[0].data.push(totalRequests);
 
-          requestCountChart.update();
+           // Update chart options to make sure x-axis scales correctly
+           requestCountChart.options.scales.x = {
+            type: 'time',
+            time: {
+                unit: 'minute',
+                tooltipFormat: 'HH:mm:ss',
+                displayFormats: {
+                    minute: 'HH:mm:ss'
+                }
+            },
+            title: {
+                display: true,
+                text: 'Timestamp'
+            }
+        };
+
+        document.getElementById("totalRequestsCounter").textContent = totalRequests;
+        
+        requestCountChart.update('none');
         })
         .catch((error) => {
           console.error("Error fetching total count:", error);
+          const errorDisplay = document.getElementById("totalRequestsCounter");
+            if (errorDisplay) {
+                errorDisplay.textContent = "Error";
+                errorDisplay.style.color = "red";
+            }
+        
         });
     }
 
@@ -587,11 +626,17 @@
             statusIndicator.textContent = "⚠️ DDoS ATTACK DETECTED";
             statusIndicator.className = "status-indicator status-ddos";
             detectionCount++;
+            confidenceChart.data.datasets[0].data = [20];  // Normal traffic confidence
+                confidenceChart.data.datasets[1].data = [80];  // Attack traffic confidence
+                confidenceChart.update();
             document.getElementById("detectionCount").textContent =
               detectionCount;
           } else {
             statusIndicator.textContent = "Normal Traffic";
             statusIndicator.className = "status-indicator status-normal";
+            confidenceChart.data.datasets[0].data = [70];
+                confidenceChart.data.datasets[1].data = [30];
+                confidenceChart.update();
           }
 
           if (data.recent_predictions && data.recent_predictions.length > 0) {
@@ -638,8 +683,9 @@
         totalRequests = 0;
         document.getElementById("peakRps").textContent = "0";
         document.getElementById("detectionCount").textContent = "0";
+        document.getElementById("totalRequestsCounter").textContent = "0";
 
-        // Clear chart data
+         
         trafficChart.data.labels = [];
         trafficChart.data.datasets[0].data = [];
         trafficChart.update();

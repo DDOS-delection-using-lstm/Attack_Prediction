@@ -1,15 +1,15 @@
 # main.py
 import os
 import argparse
-import threading
 import logging
 from server import run_server
 from train_model import train_lstm_model
 
 os.makedirs('model', exist_ok=True)
 os.makedirs('logs', exist_ok=True)
+
 logging.basicConfig(filename="main.log",level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)            
 logger.info("Starting DDoS detection system...")
 
 def check_model_exists():

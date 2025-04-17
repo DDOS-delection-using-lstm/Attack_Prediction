@@ -7,8 +7,8 @@ import joblib
 from collections import deque
 import logging
 from datetime import datetime
-logging.basicConfig(filename="prediction.log", level=logging.INFO,
-                   format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(filename="prediction.log",level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -23,32 +23,28 @@ class PredictionModel:
         self.history = deque(maxlen=100)
         self.window = deque(maxlen=sequence_length)
         self.last_prediction_time = None
-        self.prediction_threshold = 0.6
+        self.prediction_threshold = 0.5
         self.load_model()
         
     def load_model(self):
-        logger.info("Loading TensorFlow model - this may take a moment...")
+
+        logger.info("Loading TensorFlow model and artifacts...")
         try:
             model_path = os.path.join(self.model_dir, 'ddos_model.h5')
             self.model = tf.keras.models.load_model(model_path)
             self.scaler = joblib.load(os.path.join(self.model_dir, 'scaler.pkl'))
             self.label_encoder = joblib.load(os.path.join(self.model_dir, 'label_encoder.pkl'))
             self.feature_columns = joblib.load(os.path.join(self.model_dir, 'feature_columns.pkl'))
-            
-            logger.info("Model and artifacts loaded successfully")
+            logger.info("Model and artifacts loaded successfully.")
         except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-            logger.warning("Using default model configuration")
-            
-            # If loading fails, set up with defaults
-            self.feature_columns = [
-                'Source IP', 'Destination IP', 'Protocol','Total Length of Fwd Packets', 'Fwd Packet Length Min',
-                'Bwd IAT Mean', 'Flow IAT Min', 'Init_Win_bytes_forward','Init_Win_bytes_backward', 'ACK Flag Count', 
-                'SYN Flag Count','FIN Flag Count', 'Flow Packets/s', 'Flow Bytes/s'
-            ]
+            logger.error(f"Error loading model: {e}")
+            logger.warning("Using default model configuration.")
+
     
     def preprocess_data(self, data_df ): 
         df = data_df.copy() 
+        df.columns = [c.strip() for c in df.columns]
+
         drop_cols = ['Timestamp', 'Fwd Header Length']
         df.drop(columns=[col for col in drop_cols if col in df.columns], inplace=True)
          
@@ -87,23 +83,32 @@ class PredictionModel:
             self.window.append(row.values)
              
         if len(self.window) < self.sequence_length:
-            return {"prediction": "Insufficient data", "probability": 0.0, "status": "Insufficient data"}
+            return {"prediction": "Insufficient data",
+                    "probability": 0.0, 
+                    "status": "Insufficient data"}
              
         
         sequence = np.array([list(self.window)])
-        adjusted_prob = float(self.model.predict(sequence, verbose=0)[0][0])
         
-        # adjusted_prob = pred_probability
-         
+        try:
+            adjusted_prob = float(self.model.predict(sequence, verbose=0)[0][0])
+        except Exception as e:
+            logger.error(f"Model prediction error: {e}")
+            return {
+                "prediction": "Error",
+                "probability": 0.0,
+                "status": "Error"
+            }
+
         pred_label = "DDoS Attack" if adjusted_prob > self.prediction_threshold else "Normal Traffic"
         status = "DDoS Attack Detected" if adjusted_prob > self.prediction_threshold else "Normal Traffic"
-         
+
         self.history.append({
-                        "timestamp": current_time,
-                        "prediction": pred_label,
-                        "probability": adjusted_prob,
-                        "status": status
-                        })
+            "timestamp": current_time.isoformat(),
+            "prediction": pred_label,
+            "probability": adjusted_prob,
+            "status": status
+        })
         
         return {
                 "prediction": pred_label,

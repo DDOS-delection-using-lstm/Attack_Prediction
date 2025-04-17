@@ -2,10 +2,7 @@ numpy
 pandas
 tensorflow
 joblib
-collections
-logging
 scikit-learn
 seaborn
-matplotlib
-threading
 requests
+flask

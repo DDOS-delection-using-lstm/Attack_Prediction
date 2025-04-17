@@ -161,11 +161,11 @@
     </div>
     
     <div class="footer">
-        <p>DDoS Detection System using LSTM-RNN</p>
+        <p>DDoS Attack Detection System using LSTM-RNN</p>
     </div>
     
     <script>
-        // Function to update the current RPS
+      
         function updateRPS() {
             fetch('/total_count')
                 .then(response => response.json())
@@ -177,14 +177,11 @@
                     console.error('Error fetching RPS:', error);
                 });
         }
-        
-        // Update RPS every 2 seconds
-        setInterval(updateRPS, 2000);
-        
-        // Initial update
+      
+        setInterval(updateRPS, 500);
+         
         updateRPS();
-        
-        // Test function
+         
         function runTest() {
             if (confirm('This will generate simulated attack traffic. Continue?')) {
                 fetch('/test-attack', {
@@ -198,9 +195,7 @@
                     alert('Error starting test: ' + error);
                 });
             }
-        }
-        
-        // Documentation function
+        } 
         function showDocs() {
             alert('Documentation feature will be available in the next update.');
         }
