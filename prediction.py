@@ -1,5 +1,5 @@
 # prediction.py
-import os
+import os,json
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -25,6 +25,13 @@ class PredictionModel:
         self.last_prediction_time = None
         self.prediction_threshold = 0.5
         self.load_model()
+        try:
+            with open('model/feature_importance.json') as fp:
+                self.feature_importances = json.load(fp)
+        except Exception:
+            self.feature_importances = []
+        self.history = []
+        
         
     def load_model(self):
 
@@ -78,6 +85,8 @@ class PredictionModel:
                 raise RuntimeError("Model not loaded")
         current_time = datetime.now()         
         processed_data = self.preprocess_data(data_df = traffic_data)
+        
+
          
         for _, row in processed_data.iterrows():
             self.window.append(row.values)
@@ -102,19 +111,25 @@ class PredictionModel:
 
         pred_label = "DDoS Attack" if adjusted_prob > self.prediction_threshold else "Normal Traffic"
         status = "DDoS Attack Detected" if adjusted_prob > self.prediction_threshold else "Normal Traffic"
-
-        self.history.append({
+        
+        result = {
             "timestamp": current_time.isoformat(),
             "prediction": pred_label,
             "probability": adjusted_prob,
             "status": status
-        })
+        }
         
-        return {
-                "prediction": pred_label,
-                "probability": adjusted_prob,
-                "status": status
-                }
+        if self.feature_importances:
+            top_feature, pct = self.feature_importances[0]
+        else:
+            top_feature, pct = None, None
+        result['top_feature'] = top_feature
+        result['importance_pct'] = pct
+        
+        self.history.append(result)
+        
+        return result
+        
         
     def get_history(self):         
         return list(self.history)

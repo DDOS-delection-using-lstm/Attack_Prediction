@@ -3,7 +3,8 @@ import os
 import argparse
 import logging
 from server import run_server
-from train_model import train_lstm_model
+# from train_model import DDoSDetectionModel
+# train_lstm_model = DDoSDetectionModel 
 
 os.makedirs('model', exist_ok=True)
 os.makedirs('logs', exist_ok=True)
@@ -17,7 +18,7 @@ def check_model_exists():
     model_path = os.path.join('model', 'ddos_model.h5')
     if not os.path.exists(model_path):
         logger.info("No trained model found. Training now...")
-        train_lstm_model()
+        # train_lstm_model()
     else:
         logger.info("Found existing model.")
 
@@ -27,7 +28,7 @@ def main(args):
     
     if args.train:
         logger.info("Training model...")
-        train_lstm_model(epochs=args.epochs, batch_size=args.batch_size)
+        # train_lstm_model(epochs=args.epochs, batch_size=args.batch_size)
     else:
         logger.info("Checking for existing model...")
         check_model_exists()

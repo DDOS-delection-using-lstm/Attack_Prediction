@@ -1,0 +1,114 @@
+[
+    {
+        "feature": " Destination Port",
+        "importance": 0.013589231297373772
+    },
+    {
+        "feature": " Destination IP",
+        "importance": 0.011322899721562862
+    },
+    {
+        "feature": "Source IP",
+        "importance": 0.007215132005512714
+    },
+    {
+        "feature": " Flow Packets/s",
+        "importance": 0.007161946501582861
+    },
+    {
+        "feature": " Fwd Packets/s",
+        "importance": 0.00703074224293232
+    },
+    {
+        "feature": " URG Flag Count",
+        "importance": 0.006732923910021782
+    },
+    {
+        "feature": " Source Port",
+        "importance": 0.0052329907193779945
+    },
+    {
+        "feature": " Bwd IAT Total",
+        "importance": 0.004955780226737261
+    },
+    {
+        "feature": " Protocol",
+        "importance": 0.004756303504109383
+    },
+    {
+        "feature": " Bwd Packets/s",
+        "importance": 0.004655764903873205
+    },
+    {
+        "feature": " Idle Min",
+        "importance": 0.004636159632354975
+    },
+    {
+        "feature": "Fwd IAT Total",
+        "importance": 0.0036034651566296816
+    },
+    {
+        "feature": "Total Length of Fwd Packets",
+        "importance": 0.003577049355953932
+    },
+    {
+        "feature": " Min Packet Length",
+        "importance": 0.0035136137157678604
+    },
+    {
+        "feature": " Idle Std",
+        "importance": 0.0031078155152499676
+    },
+    {
+        "feature": " Fwd Header Length",
+        "importance": 0.0029999688267707825
+    },
+    {
+        "feature": " Bwd Packet Length Min",
+        "importance": 0.0029537957161664963
+    },
+    {
+        "feature": " Bwd IAT Mean",
+        "importance": 0.0028092251159250736
+    },
+    {
+        "feature": " Bwd Header Length",
+        "importance": 0.0027747228741645813
+    },
+    {
+        "feature": " Total Fwd Packets",
+        "importance": 0.002253323094919324
+    },
+    {
+        "feature": " Active Min",
+        "importance": 0.0017880622763186693
+    },
+    {
+        "feature": " Flow Bytes/s",
+        "importance": 0.0016934508457779884
+    },
+    {
+        "feature": " Bwd IAT Min",
+        "importance": 0.0015032390365377069
+    },
+    {
+        "feature": " Fwd Packet Length Min",
+        "importance": 0.0013340862933546305
+    },
+    {
+        "feature": " Flow IAT Min",
+        "importance": 0.001259156153537333
+    },
+    {
+        "feature": " Bwd PSH Flags",
+        "importance": 6.973677541602823e-33
+    },
+    {
+        "feature": " Bwd URG Flags",
+        "importance": 5.867694579848473e-33
+    },
+    {
+        "feature": " Fwd URG Flags",
+        "importance": 5.679711727316881e-33
+    }
+]
