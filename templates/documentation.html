@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Detection System Documentation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .doc-header {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .doc-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .feature-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 1rem 0;
+        }
+        .nav-link {
+            color: #495057;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .nav-link:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+        .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .api-endpoint {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-left: 4px solid #007bff;
+            margin: 1rem 0;
+        }
+        .api-method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .api-method.get { background-color: #28a745; color: white; }
+        .api-method.post { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div class="doc-header">
+        <div class="container">
+            <h1><i class="fas fa-book me-2"></i>DDoS Detection System Documentation</h1>
+            <p class="lead">Comprehensive guide to understanding and using the DDoS detection system</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3">
+                <div class="sticky-top pt-3">
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#overview">Overview</a>
+                        <a class="nav-link" href="#components">System Components</a>
+                        <a class="nav-link" href="#installation">Installation and Setup</a>
+                        <a class="nav-link" href="#usage">Usage</a>
+                        <a class="nav-link" href="#training">Training Process</a>
+                        <a class="nav-link" href="#api">API Documentation</a>
+                        <a class="nav-link" href="#dashboard">Dashboard Guide</a>
+                        <a class="nav-link" href="#troubleshooting">Troubleshooting</a>
+                        <a class="nav-link" href="#enhancements">Future Enhancements</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <a href="/" class="btn btn-primary mb-3"><i class="fas fa-home"></i> Back to Home</a>
+
+                <!-- Overview Section -->
+                <section id="overview" class="doc-section">
+                    <h2>Overview</h2>
+                    <p>The DDoS Detection System is a real-time network traffic monitoring and analysis tool designed to detect Distributed Denial of Service (DDoS) attacks. It leverages an LSTM (Long Short-Term Memory) neural network to classify network traffic as normal or malicious, providing a web-based dashboard for monitoring and a RESTful API for integration with other systems.</p>
+                    <h3>Key Features</h3>
+                    <ul>
+                        <li>Real-time traffic analysis and attack detection</li>
+                        <li>Machine learning-driven classification</li>
+                        <li>Interactive monitoring dashboard</li>
+                        <li>API endpoints for system interaction</li>
+                        <li>Robust logging for diagnostics</li>
+                    </ul>
+                </section>
+
+                <!-- System Components Section -->
+                <section id="components" class="doc-section">
+                    <h2>System Components</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <i class="fas fa-database feature-icon"></i>
+                                <h3>Data Loader</h3>
+                                <p>Loads and preprocesses the CIC-DDoS2019 dataset from CSV files for training and prediction.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <i class="fas fa-brain feature-icon"></i>
+                                <h3>Model Training</h3>
+                                <p>Trains the LSTM model with preprocessed data, optimizing for attack detection accuracy.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <i class="fas fa-search feature-icon"></i>
+                                <h3>Prediction Model</h3>
+                                <p>Analyzes incoming traffic data using the trained LSTM model to identify DDoS attacks.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <i class="fas fa-server feature-icon"></i>
+                                <h3>Web Server</h3>
+                                <p>Hosts API endpoints and serves the monitoring dashboard using Flask.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <i class="fas fa-bolt feature-icon"></i>
+                                <h3>Attack Simulation</h3>
+                                <p>Generates controlled traffic to test the system's detection capabilities.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <i class="fas fa-cogs feature-icon"></i>
+                                <h3>Main Script</h3>
+                                <p>Coordinates system initialization and optional model training.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Installation and Setup Section -->
+                <section id="installation" class="doc-section">
+                    <h2>Installation and Setup</h2>
+                    <ol>
+                        <li><strong>Prerequisites</strong>:
+                            <ul>
+                                <li>Python 3.8+</li>
+                                <li>Libraries: numpy, pandas, tensorflow, scikit-learn, flask, matplotlib, seaborn, requests, chart.js, three.js</li>
+                                <li>Install via <code class="code-block">pip install -r requirements.txt</code></li>
+                            </ul>
+                        </li>
+                        <li><strong>Dataset</strong>:
+                            <ul>
+                                <li>Place CIC-DDoS2019 CSV files in the <code class="code-block">./data</code> directory.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Running the System</strong>:
+                            <ul>
+                                <li>Train a new model: <code class="code-block">python main.py --train</code></li>
+                                <li>Start the server: <code class="code-block">python main.py</code></li>
+                                <li>Access at <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+
+                <!-- Usage Section -->
+                <section id="usage" class="doc-section">
+                    <h2>Usage</h2>
+                    <h3>Monitoring</h3>
+                    <p>Navigate to <code class="code-block">/monitor</code> to view real-time traffic statistics and detection status via the dashboard.</p>
+                    <h3>Testing</h3>
+                    <p>Trigger a controlled test via the <code class="code-block">/test-attack</code> endpoint or the dashboard's "Run Test" button.</p>
+                </section>
+
+                <!-- Training Process Section -->
+                <section id="training" class="doc-section">
+                    <h2>Training Process</h2>
+                    <p>The LSTM model is trained to detect DDoS attacks with high accuracy. The process includes:</p>
+                    <h3>1. Data Preparation</h3>
+                    <ul>
+                        <li>Loads CIC-DDoS2019 dataset from <code class="code-block">./data</code>.</li>
+                        <li>Encodes labels (normal: 0, attack: 1) using LabelEncoder.</li>
+                        <li>Drops irrelevant columns (e.g., 'Timestamp').</li>
+                        <li>Hashes IPs to integers, cleans NaN/infinite values, and scales features with StandardScaler.</li>
+                    </ul>
+                    <h3>2. Sequence Generation</h3>
+                    <ul>
+                        <li>Creates balanced sequences (length: 10) from features, capped at 10,000 samples per class.</li>
+                        <li>Shuffles sequences to remove order bias.</li>
+                    </ul>
+                    <h3>3. Model Construction</h3>
+                    <ul>
+                        <li>Builds an LSTM model with two LSTM layers (32 and 16 units), Dense layers, dropout (50%), and L2 regularization.</li>
+                        <li>Compiles with Adam optimizer (lr=0.0005) and binary cross-entropy loss.</li>
+                    </ul>
+                    <h3>4. Training Execution</h3>
+                    <ul>
+                        <li>Splits data: 60% train, 20% validation, 20% test.</li>
+                        <li>Uses callbacks: EarlyStopping, ReduceLROnPlateau, ModelCheckpoint.</li>
+                        <li>Trains for 10 epochs with class weights to balance classes.</li>
+                    </ul>
+                    <h3>5. Evaluation and Saving</h3>
+                    <ul>
+                        <li>Evaluates on test set, saves metrics (e.g., accuracy: 98.16%) and model as <code class="code-block">ddos_model.h5</code>.</li>
+                        <li>Generates confusion matrix and learning curves.</li>
+                    </ul>
+                </section>
+
+                <!-- API Documentation Section -->
+                <section id="api" class="doc-section">
+                    <h2>API Documentation</h2>
+                    <div class="api-endpoint">
+                        <span class="api-method get">GET</span>
+                        <code>/status</code>
+                        <p>Retrieve current system status and metrics.</p>
+                        <p><strong>Response:</strong> JSON with requests per second, status, and total requests.</p>
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="api-method post">POST</span>
+                        <code>/predict</code>
+                        <p>Analyze traffic data for DDoS detection.</p>
+                        <p><strong>Request Body:</strong> JSON with <code>traffic_data</code> matching training feature structure.</p>
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="api-method get">GET</span>
+                        <code>/model-metrics</code>
+                        <p>Fetch model performance metrics.</p>
+                        <p><strong>Response:</strong> JSON with accuracy, precision, recall, and F1-score.</p>
+                    </div>
+                </section>
+
+                <!-- Dashboard Guide Section -->
+                <section id="dashboard" class="doc-section">
+                    <h2>Dashboard Guide</h2>
+                    <h3>Key Metrics</h3>
+                    <ul>
+                        <li><strong>Current RPS:</strong> Real-time requests per second</li>
+                        <li><strong>Attack Probability:</strong> Likelihood of current traffic being malicious</li>
+                        <li><strong>Total Requests:</strong> Cumulative request count</li>
+                    </ul>
+                    <h3>Visualizations</h3>
+                    <ul>
+                        <li><strong>Traffic Analysis:</strong> Plots RPS and attack probability over time</li>
+                        <li><strong>Detection Confidence:</strong> Shows model confidence levels</li>
+                        <li><strong>Feature Importance:</strong> Highlights key detection features</li>
+                    </ul>
+                </section>
+
+                <!-- Troubleshooting Section -->
+                <section id="troubleshooting" class="doc-section">
+                    <h2>Troubleshooting</h2>
+                    <div class="alert alert-info">
+                        <h4>No Model Found</h4>
+                        <p>Run <code class="code-block">python main.py --train</code> to train a model if none is detected.</p>
+                    </div>
+                    <div class="alert alert-info">
+                        <h4>Dataset Errors</h4>
+                        <p>Verify CSV files in <code class="code-block">./data</code> include a label column.</p>
+                    </div>
+                    <div class="alert alert-info">
+                        <h4>Server Issues</h4>
+                        <p>Check <code class="code-block">server.log</code> and <code class="code-block">train_model.log</code>. Ensure port 5000 is free.</p>
+                    </div>
+                </section>
+
+                <!-- Future Enhancements Section -->
+                <section id="enhancements" class="doc-section">
+                    <h2>Future Enhancements</h2>
+                    <ul>
+                        <li>Support for multiple datasets</li>
+                        <li>Real-time feature importance on dashboard</li>
+                        <li>Predictive analytics for attack forecasting</li>
+                    </ul>
+                </section>
+
+                <a href="/" class="btn btn-primary mt-3"><i class="fas fa-home"></i> Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Update active nav link on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 60) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').slice(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

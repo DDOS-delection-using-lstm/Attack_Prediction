@@ -207,6 +207,11 @@ def predict():
             "status": "Error"
         }), 500 
         
+        
+@app.route("/docs")
+def docs():
+    return render_template("documentation.html")
+
 @app.route('/status', methods=['GET'])
 def status():
     if predictor is None:
