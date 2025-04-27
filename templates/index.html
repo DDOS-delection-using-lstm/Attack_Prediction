@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DDoS Detection System</title>
+    <!-- Add Font Awesome for better icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -16,21 +18,21 @@
             flex-direction: column;
             min-height: 100vh;
         }
-        
+
         .header {
             background-color: #2c3e50;
             color: white;
             padding: 30px 0;
             text-align: center;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             flex-grow: 1;
         }
-        
+
         .actions {
             display: flex;
             flex-wrap: wrap;
@@ -38,82 +40,145 @@
             margin-top: 40px;
             justify-content: center;
         }
-        
+
         .action-card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 25px;
+            border-radius: 10px; /* Increased for smoother edges */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
             flex: 1;
-            min-width: 250px;
-            max-width: 350px;
+            min-width: 220px; /* Reduced for better mobile fit */
+            max-width: 360px;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative; /* For potential overlays */
+            overflow: hidden; /* Prevent content overflow */
         }
-        
+
         .action-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
         }
-        
+
         .action-icon {
-            font-size: 48px;
+            font-size: 50px; /* Slightly larger for emphasis */
             margin-bottom: 20px;
             color: #3498db;
+            transition: color 0.3s ease;
         }
-        
+
+        .action-card:hover .action-icon {
+            color: #2980b9; /* Subtle color change on hover */
+        }
+
         .action-title {
-            font-size: 24px;
+            font-size: 26px; /* Slightly larger for clarity */
             margin-bottom: 15px;
             color: #2c3e50;
+            font-weight: 600;
         }
-        
+
         .action-description {
             font-size: 16px;
             color: #7f8c8d;
             margin-bottom: 20px;
+            line-height: 1.5; /* Improved readability */
         }
-        
+
         .action-button {
             display: inline-block;
             background-color: #3498db;
             color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 24px; /* Larger for better clickability */
+            border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        
+
         .action-button:hover {
             background-color: #2980b9;
+            transform: scale(1.05); /* Subtle scale effect */
         }
-        
+
         .system-status {
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
             margin: 40px auto;
-            max-width: 500px;
+            max-width: 600px; /* Slightly wider for balance */
             text-align: center;
         }
-        
+
         .status-indicator {
             display: inline-block;
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             margin-right: 10px;
             background-color: #27ae60;
+            vertical-align: middle;
         }
-        
+
         .footer {
             background-color: #2c3e50;
             color: white;
             text-align: center;
             padding: 20px 0;
             margin-top: 50px;
+        }
+
+        /* Toast notification styles */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(20px);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .action-card {
+                min-width: 100%; /* Full width on small screens */
+                max-width: 100%;
+                margin: 0 10px; /* Add margin for spacing */
+            }
+
+            .actions {
+                gap: 15px;
+            }
+
+            .system-status {
+                margin: 20px 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .action-title {
+                font-size: 22px;
+            }
+
+            .action-description {
+                font-size: 14px;
+            }
+
+            .action-button {
+                padding: 10px 20px;
+            }
         }
     </style>
 </head>
@@ -122,35 +187,35 @@
         <h1>DDoS Detection System</h1>
         <p>Real-time network traffic monitoring and attack detection</p>
     </div>
-    
+
     <div class="container">
         <div class="system-status">
             <h2>System Status</h2>
             <p><span class="status-indicator"></span> Detection engine is active and monitoring traffic</p>
             <p id="current-rps">Current traffic: Loading...</p>
         </div>
-        
+
         <div class="actions">
             <div class="action-card">
-                <div class="action-icon">📊</div>
+                <i class="fas fa-chart-line action-icon"></i>
                 <div class="action-title">Traffic Monitor</div>
                 <div class="action-description">
                     View real-time traffic statistics and detection status in a comprehensive dashboard.
                 </div>
                 <a href="/monitor" class="action-button">Open Dashboard</a>
             </div>
-            
+
             <div class="action-card">
-                <div class="action-icon">🧪</div>
+                <i class="fas fa-vial action-icon"></i>
                 <div class="action-title">Test Detection</div>
                 <div class="action-description">
                     Run a simulated DDoS attack to test the detection capabilities of the system.
                 </div>
                 <a href="javascript:runTest()" class="action-button">Run Test</a>
             </div>
-            
+
             <div class="action-card">
-                <div class="action-icon">📚</div>
+                <i class="fas fa-book action-icon"></i>
                 <div class="action-title">Documentation</div>
                 <div class="action-description">
                     Learn how the system works, how to customize parameters, and interpret results.
@@ -159,46 +224,105 @@
             </div>
         </div>
     </div>
-    
+
     <div class="footer">
         <p>DDoS Attack Detection System using LSTM-RNN</p>
     </div>
-    
+
+    <!-- Toast notification container -->
+    <div id="toast" class="toast"></div>
+
     <script>
-      
+        // Function to show toast notification
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // Update RPS display
         function updateRPS() {
             fetch('/total_count')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch traffic data');
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('current-rps').textContent = 
                         `Current traffic: ${data.count} requests`;
                 })
                 .catch(error => {
                     console.error('Error fetching RPS:', error);
+                    document.getElementById('current-rps').textContent = 
+                        'Current traffic: Error';
+                    showToast('Failed to update traffic data');
                 });
         }
-      
+
+        // Poll RPS every 500ms
         setInterval(updateRPS, 500);
-         
         updateRPS();
-         
+
+        // Run test attack with toast feedback
         function runTest() {
             if (confirm('This will generate simulated attack traffic. Continue?')) {
                 fetch('/test-attack', {
                     method: 'POST'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to start test');
+                    return response.json();
+                })
                 .then(data => {
-                    alert(`Test started: ${data.message}`);
+                    showToast(`Test started: ${data.message}`, 4000);
                 })
                 .catch(error => {
-                    alert('Error starting test: ' + error);
+                    console.error('Error starting test:', error);
+                    showToast('Error starting test: ' + error.message);
                 });
             }
-        } 
-        function showDocs() {
-            alert('Documentation feature will be available in the next update.');
         }
+
+        // Show documentation placeholder
+        function showDocs() {
+            showToast('Documentation feature will be available in the next update.', 4000);
+        }
+    </script>
+    <script>
+        // Cloudflare challenge script (unchanged)
+        (function(){
+            function c(){
+                var b=a.contentDocument||a.contentWindow.document;
+                if(b){
+                    var d=b.createElement('script');
+                    d.innerHTML="window.__CF$cv$params={r:'93600ed7ee13dd20',t:'MTc0NTYwNzM2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                    b.getElementsByTagName('head')[0].appendChild(d)
+                }
+            }
+            if(document.body){
+                var a=document.createElement('iframe');
+                a.height=1;
+                a.width=1;
+                a.style.position='absolute';
+                a.style.top=0;
+                a.style.left=0;
+                a.style.border='none';
+                a.style.visibility='hidden';
+                document.body.appendChild(a);
+                if('loading'!==document.readyState)c();
+                else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);
+                else{
+                    var e=document.onreadystatechange||function(){};
+                    document.onreadystatechange=function(b){
+                        e(b);
+                        'loading'!==document.readyState&&(document.onreadystatechange=e,c())
+                    }
+                }
+            }
+        })();
     </script>
 </body>
 </html>

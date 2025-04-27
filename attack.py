@@ -1,3 +1,6 @@
+
+#attack.py
+
 import os
 import sys
 import requests
@@ -64,7 +67,7 @@ def send_traffic_from_dataset(url, data_source, duration=60, rps_min=50, rps_max
     logger.info(f"Traffic generation completed. Sent {request_count} requests in {elapsed:.2f} seconds.")
     return request_count
 
-def run_attack_simulation(url, attack_duration=60, 
+def run_attack_simulation(url, attack_duration=20, 
                           normal_duration=10, 
                           normal_rps=(1, 10), 
                           attack_rps=(100, 500)):
@@ -95,8 +98,8 @@ def run_attack_simulation(url, attack_duration=60,
 if __name__ == "main":
     parser = argparse.ArgumentParser(description='DDoS Attack Testing Tool')
     parser.add_argument('--url', default="http://127.0.0.1:5000/predict", help='Target URL')
-    parser.add_argument('--normal-time', type=int, default=20, help='Duration of normal traffic (seconds)')
-    parser.add_argument('--attack-time', type=int, default=60, help='Duration of attack traffic (seconds)')
+    parser.add_argument('--normal-time', type=int, default=10, help='Duration of normal traffic (seconds)')
+    parser.add_argument('--attack-time', type=int, default=10, help='Duration of attack traffic (seconds)')
     parser.add_argument('--normal-rps', type=str, default="1,20", help='Normal RPS range (min,max)')
     parser.add_argument('--attack-rps', type=str, default="100,200", help='Attack RPS range (min,max)')
 

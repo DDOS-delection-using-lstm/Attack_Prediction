@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Attack Detection Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-header {
+            background-color: #343a40;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            font-weight: 600;
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .metric-card {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .model-chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        #networkVisualizerContainer {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #barometer3D {
+            width: 100%;
+            height: 200px;
+        }
+        .status-indicator {
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+        }
+        #attackTypesList {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1><i class="fas fa-shield-alt me-2"></i>DDoS Attack Detection Dashboard</h1>
+                        <p class="mb-0">Real-time monitoring and analysis of network traffic patterns</p>
+                    </div>
+                    <div>
+                        <span id="statusIndicator" class="badge bg-success status-indicator">Normal Traffic</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Key Metrics -->
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Key Metrics</h5>
+                        <div>
+                            <button id="resetStatsBtn" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-redo-alt me-1"></i>Reset Stats
+                            </button>
+                            <button id="runTestBtn" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-flask me-1"></i>Run Test Attack
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="metricsContainer" class="metrics-container">
+                            <div class="metric-card">
+                                <div class="metric-label">Current RPS</div>
+                                <div id="currentRps" class="metric-value text-primary">0</div>
+                                <div class="text-muted">Requests per second</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Peak RPS</div>
+                                <div id="peakRps" class="metric-value text-warning">0</div>
+                                <div class="text-muted">Highest recorded</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Attack Detections</div>
+                                <div id="detectionCount" class="metric-value text-danger">0</div>
+                                <div class="text-muted">Since monitoring began</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Total Requests</div>
+                                <div id="totalRequestsCounter" class="metric-value text-info">0</div>
+                                <div class="text-muted">Since monitoring began</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D Threat Barometer -->
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Threat Level</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <canvas id="barometer3D"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Traffic Chart -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Real-time Traffic Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="trafficChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detection Confidence -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Detection Confidence</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         
+
+            <!-- Attack Types List -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Detections</h5>
+                        <button id="downloadLogsBtn" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-download me-1"></i>Download Logs
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <ul id="attackTypesList" class="list-group list-group-flush">
+                            <!-- Attack detections will be added here dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Total Requests Chart -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Total Requests Over Time</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="requestCountChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Importance -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-list-ol me-2"></i>Feature Importance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="featureImportanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Model Comparison Charts -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Model Performance Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="model-chart-container">
+                            <canvas id="modelComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-radar me-2"></i>Model Performance Radar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="model-chart-container">
+                            <canvas id="modelComparisonRadarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load required libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Main Application Script -->
+    <script>
+        // --- Chart Instances ---
+        let trafficChart, confidenceChart, requestCountChart, modelComparisonChartInstance, modelComparisonRadarChartInstance, featureImportanceChartInstance;
+        let networkVisualizer; // 3D Network Traffic Visualizer
+        let barometerScene, barometerCamera, barometerRenderer;
+
+        // --- Data Storage & State ---
+        let peakRps = 0;
+        let detectionCount = 0;
+        let totalRequests = 0;
+        let lastStatus = "Normal Traffic";
+        const MAX_CHART_POINTS = 120;
+        let attackLogs = [];
+
+        // --- DOM Elements ---
+        const currentRpsEl = document.getElementById('currentRps');
+        const peakRpsEl = document.getElementById('peakRps');
+        const detectionCountEl = document.getElementById('detectionCount');
+        const totalRequestsCounterEl = document.getElementById('totalRequestsCounter');
+        const statusIndicatorEl = document.getElementById('statusIndicator');
+        const attackTypesListEl = document.getElementById('attackTypesList');
+        const resetStatsBtnEl = document.getElementById('resetStatsBtn');
+        const runTestBtnEl = document.getElementById('runTestBtn');
+        const downloadLogsBtnEl = document.getElementById('downloadLogsBtn');
+        const networkVisualizerContainerEl = document.getElementById('networkVisualizerContainer');
+
+        // --- Chart Contexts ---
+        const trafficCtx = document.getElementById('trafficChart')?.getContext('2d');
+        const confidenceCtx = document.getElementById('confidenceChart')?.getContext('2d');
+        const requestCountCtx = document.getElementById('requestCountChart')?.getContext('2d');
+        const modelComparisonCtx = document.getElementById('modelComparisonChart')?.getContext('2d');
+        const modelComparisonRadarCtx = document.getElementById('modelComparisonRadarChart')?.getContext('2d');
+        const featureImportanceCtx = document.getElementById('featureImportanceChart')?.getContext('2d');
+        const barometer3DCtx = document.getElementById('barometer3D');
+
+        // --- Static Data ---
+        const modelComparisonData = [
+            { model: 'Decision Tree', accuracy: 99.00, precision: 0.96, recall: 0.93, f1: 0.93 },
+            { model: 'SVM', accuracy: 92.75, precision: 0.90, recall: 0.89, f1: 0.89 },
+            { model: 'Naive Bayes', accuracy: 82.48, precision: 0.76, recall: 0.75, f1: 0.71 },
+            { model: 'MLP', accuracy: 97.33, precision: 0.89, recall: 0.88, f1: 0.89 },
+            { model: 'LSTM', accuracy: 98.16, precision: 0.90, recall: 0.89, f1: 0.89 },
+            { model: 'XGBoost', accuracy: 98.59, precision: 0.86, recall: 0.86, f1: 0.86 },
+            { model: 'AdaBoost', accuracy: 99.00, precision: 0.93, recall: 0.93, f1: 0.93 }
+        ];
+
+        const featureImportanceData = {
+            labels: ['Flow Duration', 'Total Fwd Packets', 'Packet Length Mean', 'Fwd IAT Mean', 'Protocol Type', 'Avg Packet Size', 'Flow Bytes/s'],
+            importance: [95, 92, 88, 85, 75, 70, 65]
+        };
+
+        const attackVectorData = {
+            vectors: [
+                {name: 'DNS Amplification', x: 0.2, y: 0.8, z: 0.5, size: 1.2},
+                {name: 'SYN Flood', x: 0.8, y: 0.3, z: 0.6, size: 1.0},
+                {name: 'UDP Flood', x: 0.5, y: 0.5, z: 0.9, size: 1.4},
+                {name: 'HTTP Flood', x: 0.7, y: 0.7, z: 0.2, size: 0.9},
+                {name: 'ICMP Flood', x: 0.3, y: 0.2, z: 0.4, size: 0.8},
+                {name: 'SlowLoris', x: 0.1, y: 0.4, z: 0.7, size: 0.7},
+                {name: 'NTP Amplification', x: 0.6, y: 0.6, z: 0.3, size: 1.3}
+            ],
+            connections: [
+                [0, 1], [0, 2], [1, 3], [2, 4], [2, 5], [3, 5], [4, 6], [5, 6]
+            ]
+        };
+
+        // --- Mock API Response ---
+        function getMockData(isTestAttack = false) {
+            const isAttack = isTestAttack || Math.random() < 0.1; // 10% chance of attack unless test
+            let rps, attackProbability = 0, status = "Normal Traffic", attackType = null;
+            
+            if (isAttack) {
+                rps = 500 + Math.floor(Math.random() * 1500);
+                attackProbability = 70 + Math.floor(Math.random() * 30);
+                status = "DDoS Attack Detected";
+                const attackTypes = ["DrDoS_DNS", "DrDoS_LDAP", "DrDoS_NTP", "Syn", "UDP-lag", "WebDDoS"];
+                attackType = attackTypes[Math.floor(Math.random() * attackTypes.length)];
+            } else {
+                rps = 150 + Math.floor(Math.random() * 350);
+                attackProbability = Math.floor(Math.random() * 10);
+            }
+            
+            return {
+                currentRps: rps,
+                attackProbability: attackProbability,
+                status: status,
+                attackType: attackType,
+                newRequests: Math.floor(rps * (0.8 + Math.random() * 0.4))
+            };
+        }
+
+        // --- Chart Initialization Functions ---
+        function initializeTrafficChart() {
+            if (!trafficCtx) return;
+            trafficChart = new Chart(trafficCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Requests Per Second (RPS)',
+                        data: [],
+                        borderColor: 'rgb(0, 123, 255)',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        yAxisID: 'yRps',
+                        tension: 0.3,
+                        pointRadius: 0
+                    }, {
+                        label: 'Attack Probability (%)',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        yAxisID: 'yProb',
+                        tension: 0.3,
+                        pointRadius: 0,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: { type: 'time', time: { unit: 'second' }, title: { display: true, text: 'Time' } },
+                        yRps: { position: 'left', beginAtZero: true, title: { display: true, text: 'RPS' } },
+                        yProb: { position: 'right', min: 0, max: 100, title: { display: true, text: 'Probability (%)' } }
+                    }
+                }
+            });
+        }
+
+        function initializeConfidenceChart() {
+            if (!confidenceCtx) return;
+            confidenceChart = new Chart(confidenceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Detection Confidence'],
+                    datasets: [{
+                        label: 'Normal Traffic',
+                        data: [100],
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)'
+                    }, {
+                        label: 'DDoS Attack',
+                        data: [0],
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: { x: { stacked: true, beginAtZero: true, max: 100 }, y: { stacked: true } }
+                }
+            });
+        }
+
+        function initializeRequestCountChart() {
+            if (!requestCountCtx) return;
+            requestCountChart = new Chart(requestCountCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Requests',
+                        data: [],
+                        borderColor: 'rgb(23, 162, 184)',
+                        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: 'Time' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Total Requests' } }
+                    }
+                }
+            });
+        }
+
+        function initializeModelComparisonChart() {
+            if (!modelComparisonCtx) return;
+            modelComparisonChartInstance = new Chart(modelComparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: modelComparisonData.map(item => item.model),
+                    datasets: [
+                        { label: 'Accuracy (%)', data: modelComparisonData.map(item => item.accuracy), backgroundColor: 'rgba(54, 162, 235, 0.7)' },
+                        { label: 'Precision (%)', data: modelComparisonData.map(item => item.precision * 100), backgroundColor: 'rgba(255, 99, 132, 0.7)' },
+                        { label: 'Recall (%)', data: modelComparisonData.map(item => item.recall * 100), backgroundColor: 'rgba(75, 192, 192, 0.7)' },
+                        { label: 'F1-Score (%)', data: modelComparisonData.map(item => item.f1 * 100), backgroundColor: 'rgba(255, 205, 86, 0.7)' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 }, x: { title: { display: true, text: 'Model' } } }
+                }
+            });
+        }
+
+        function initializeModelComparisonRadarChart() {
+            if (!modelComparisonRadarCtx) return;
+            modelComparisonRadarChartInstance = new Chart(modelComparisonRadarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Accuracy (%)', 'Precision (%)', 'Recall (%)', 'F1-Score (%)'],
+                    datasets: modelComparisonData.map((item, index) => ({
+                        label: item.model,
+                        data: [item.accuracy, item.precision * 100, item.recall * 100, item.f1 * 100],
+                        backgroundColor: `rgba(${index * 30}, ${150 - index * 10}, ${255 - index * 30}, 0.2)`
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { r: { beginAtZero: false, min: 70, max: 100 } }
+                }
+            });
+        }
+
+        function initializeFeatureImportanceChart() {
+            if (!featureImportanceCtx) return;
+            featureImportanceChartInstance = new Chart(featureImportanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: featureImportanceData.labels,
+                    datasets: [{
+                        label: 'Relative Importance',
+                        data: featureImportanceData.importance,
+                        backgroundColor: 'rgba(0, 123, 255, 0.6)'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        function initializeBarometer3D() {
+            if (!barometer3DCtx) return;
+            barometerScene = new THREE.Scene();
+            barometerScene.background = new THREE.Color(0xf8f9fa);
+            barometerCamera = new THREE.PerspectiveCamera(75, barometer3DCtx.clientWidth / barometer3DCtx.clientHeight, 0.1, 1000);
+            barometerCamera.position.z = 5;
+            barometerRenderer = new THREE.WebGLRenderer({ canvas: barometer3DCtx });
+            barometerRenderer.setSize(barometer3DCtx.clientWidth, barometer3DCtx.clientHeight);
+
+            const geometry = new THREE.SphereGeometry(1, 32, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x28a745 });
+            const sphere = new THREE.Mesh(geometry, material);
+            barometerScene.add(sphere);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.y += 0.01;
+                barometerRenderer.render(barometerScene, barometerCamera);
+            }
+            animate();
+        }
+
+        function initializeNetworkVisualizer() {
+            if (!networkVisualizerContainerEl) return;
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf8f9fa);
+            const camera = new THREE.PerspectiveCamera(75, networkVisualizerContainerEl.clientWidth / networkVisualizerContainerEl.clientHeight, 0.1, 1000);
+            camera.position.z = 2;
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(networkVisualizerContainerEl.clientWidth, networkVisualizerContainerEl.clientHeight);
+            networkVisualizerContainerEl.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            const nodes = attackVectorData.vectors.map(vector => {
+                const geometry = new THREE.SphereGeometry(vector.size * 0.05, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0x007bff });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(vector.x * 2 - 1, vector.y * 2 - 1, vector.z * 2 - 1);
+                scene.add(mesh);
+                return mesh;
+            });
+
+            const lines = attackVectorData.connections.map(([i, j]) => {
+                const material = new THREE.LineBasicMaterial({ color: 0x007bff });
+                const points = [nodes[i].position, nodes[j].position];
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(geometry, material);
+                scene.add(line);
+                return line;
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = networkVisualizerContainerEl.clientWidth / networkVisualizerContainerEl.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(networkVisualizerContainerEl.clientWidth, networkVisualizerContainerEl.clientHeight);
+            });
+        }
+
+        // --- Update Dashboard ---
+        function updateDashboardWithData(data) {
+            const timestamp = new Date();
+            peakRps = Math.max(peakRps, data.currentRps);
+            totalRequests += data.newRequests;
+
+            currentRpsEl.textContent = data.currentRps.toFixed(0);
+            peakRpsEl.textContent = peakRps.toFixed(0);
+            totalRequestsCounterEl.textContent = totalRequests.toFixed(0);
+
+            if (data.status !== lastStatus) {
+                statusIndicatorEl.textContent = data.status;
+                statusIndicatorEl.className = `badge status-indicator ${data.status === 'Normal Traffic' ? 'bg-success' : 'bg-danger'}`;
+                lastStatus = data.status;
+            }
+
+            if (data.attackType) {
+                detectionCount++;
+                detectionCountEl.textContent = detectionCount;
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `<strong>${data.attackType}</strong> detected at ${timestamp.toLocaleTimeString()} (Probability: ${data.attackProbability.toFixed(2)}%)`;
+                attackTypesListEl.prepend(li);
+                attackLogs.push({ type: data.attackType, time: timestamp, probability: data.attackProbability });
+                while (attackTypesListEl.children.length > 10) attackTypesListEl.removeChild(attackTypesListEl.lastChild);
+            }
+
+            if (trafficChart) {
+                trafficChart.data.labels.push(timestamp);
+                trafficChart.data.datasets[0].data.push(data.currentRps);
+                trafficChart.data.datasets[1].data.push(data.attackProbability);
+                if (trafficChart.data.labels.length > MAX_CHART_POINTS) {
+                    trafficChart.data.labels.shift();
+                    trafficChart.data.datasets[0].data.shift();
+                    trafficChart.data.datasets[1].data.shift();
+                }
+                trafficChart.update();
+            }
+
+            if (confidenceChart) {
+                confidenceChart.data.datasets[0].data[0] = 100 - data.attackProbability;
+                confidenceChart.data.datasets[1].data[0] = data.attackProbability;
+                confidenceChart.update();
+            }
+
+            if (requestCountChart) {
+                requestCountChart.data.labels.push(timestamp);
+                requestCountChart.data.datasets[0].data.push(totalRequests);
+                if (requestCountChart.data.labels.length > MAX_CHART_POINTS) {
+                    requestCountChart.data.labels.shift();
+                    requestCountChart.data.datasets[0].data.shift();
+                }
+                requestCountChart.update();
+            }
+
+            if (barometerScene) {
+                barometerScene.children[0].material.color.set(data.attackProbability > 50 ? 0xdc3545 : 0x28a745);
+            }
+        }
+
+        // --- Event Listeners ---
+        resetStatsBtnEl.addEventListener('click', () => {
+            peakRps = detectionCount = totalRequests = 0;
+            attackLogs = [];
+            peakRpsEl.textContent = detectionCountEl.textContent = totalRequestsCounterEl.textContent = '0';
+            attackTypesListEl.innerHTML = '';
+            if (trafficChart) {
+                trafficChart.data.labels = [];
+                trafficChart.data.datasets.forEach(ds => ds.data = []);
+                trafficChart.update();
+            }
+            if (requestCountChart) {
+                requestCountChart.data.labels = [];
+                requestCountChart.data.datasets[0].data = [];
+                requestCountChart.update();
+            }
+            if (confidenceChart) {
+                confidenceChart.data.datasets[0].data[0] = 100;
+                confidenceChart.data.datasets[1].data[0] = 0;
+                confidenceChart.update();
+            }
+        });
+
+        runTestBtnEl.addEventListener('click', () => updateDashboardWithData(getMockData(true)));
+
+        downloadLogsBtnEl.addEventListener('click', () => {
+            const csvContent = ['Type,Time,Probability', ...attackLogs.map(log => `${log.type},${log.time.toISOString()},${log.probability}`)].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attack_logs.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // --- Fetch Data ---
+        function fetchData() {
+            updateDashboardWithData(getMockData());
+        }
+
+        // --- Initialization ---
+        function initializeDashboard() {
+            initializeTrafficChart();
+            initializeConfidenceChart();
+            initializeRequestCountChart();
+            initializeModelComparisonChart();
+            initializeModelComparisonRadarChart();
+            initializeFeatureImportanceChart();
+            initializeBarometer3D();
+            initializeNetworkVisualizer();
+            fetchData();
+            setInterval(fetchData, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>

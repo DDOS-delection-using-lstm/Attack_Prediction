@@ -109,18 +109,39 @@ def reset_counts():
 @app.route('/model-metrics', methods=['GET'])
 def model_metrics():
     try:
-        with open('.model/evaluation_metrics.json', 'r') as f:
+        with open('model/evaluation_metrics.json', 'r') as f:
             metrics = json.load(f)
         return jsonify(metrics)
     except Exception as e:
         logger.error(f"Error loading model metrics: {str(e)}")
         return jsonify({
-            'accuracy': 0.95,  
+            'accuracy': 0.95,
             'precision': 0.94,
             'recall': 0.93,
             'f1_score': 0.94
         })
-        
+
+@app.route('/learning-curves', methods=['GET'])
+def learning_curves():
+    try:
+        # Read the learning curves data from the model training history
+        with open('model/training_history.json', 'r') as f:
+            history = json.load(f)
+        return jsonify({
+            'training_loss': history['loss'],
+            'validation_loss': history['val_loss'],
+            'training_accuracy': history['accuracy'],
+            'validation_accuracy': history['val_accuracy']
+        })
+    except Exception as e:
+        logger.error(f"Error loading learning curves: {str(e)}")
+        return jsonify({
+            'training_loss': [],
+            'validation_loss': [],
+            'training_accuracy': [],
+            'validation_accuracy': []
+        })
+
 @app.route('/download-logs', methods=['GET'])
 def download_logs():
     try:
@@ -189,16 +210,22 @@ def predict():
 @app.route('/status', methods=['GET'])
 def status():
     if predictor is None:
-        return jsonify({"requests_per_second": requests_per_second,
-                        "status": "Error: Predictor not initialized",
-                        "recent_predictions": []})
-    return jsonify({"requests_per_second": requests_per_second,
-                    "status": ddos_detection_status,
-                    "recent_predictions": predictor.get_history()})
+        return jsonify({
+            "requests_per_second": requests_per_second,
+            "status": "Error: Predictor not initialized",
+            "recent_predictions": []
+        })
+
+    return jsonify({
+        "requests_per_second": requests_per_second,
+        "status": ddos_detection_status,
+        "total_requests": total_requests,
+        "recent_predictions": predictor.get_history()
+    })
 
 @app.route("/monitor", methods=["GET"])
 def monitor():
-    return render_template("./monitor.html")
+    return render_template("enhanced_monitor.html")
 
 @app.route('/test-attack', methods=['POST'])
 def test_attack():
